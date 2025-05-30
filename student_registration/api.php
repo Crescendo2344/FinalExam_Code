@@ -21,16 +21,16 @@ try {
     
     switch ($action) {
         case 'read':
-            $stmt = $pdo->query("SELECT * FROM students ORDER BY last_name, first_name");
-            echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
-            break;
+    $stmt = $pdo->query("SELECT * FROM students ORDER BY last_name, first_name");
+    echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+    break;
             
         case 'search':
     $field = $_GET['field'] ?? '';
     $term = $_GET['term'] ?? '';
     
-    
-    $validFields = ['student_id', 'last_name', 'first_name', 'sex', 'course'];
+   
+    $validFields = ['student_id', 'last_name', 'first_name', 'sex', 'course', 'class_mode'];
     if (!in_array($field, $validFields)) {
         echo json_encode(['error' => 'Invalid search field']);
         break;
@@ -38,8 +38,21 @@ try {
     
     try {
         
-        if ($field === 'sex') {
-            $stmt = $pdo->prepare("SELECT * FROM students WHERE LOWER($field) = LOWER(:term) ORDER BY last_name, first_name");
+        if ($field === 'sex' || $field === 'class_mode') {
+            $validTerms = [];
+            if ($field === 'sex') {
+                $validTerms = ['Male', 'Female', 'Other'];
+            } elseif ($field === 'class_mode') {
+                $validTerms = ['Online', 'Face-to-face', 'Hybrid'];
+            }
+            
+            
+            if (!in_array($term, $validTerms)) {
+                echo json_encode(['error' => "Invalid $field value. Must be one of: " . implode(', ', $validTerms)]);
+                break;
+            }
+            
+            $stmt = $pdo->prepare("SELECT * FROM students WHERE $field = :term ORDER BY last_name, first_name");
             $stmt->bindParam(':term', $term, PDO::PARAM_STR);
         } 
         
@@ -50,9 +63,6 @@ try {
         
         $stmt->execute();
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        
-        error_log("Search executed: field=$field, term=$term, results=".count($results));
         
         echo json_encode($results);
     } catch (PDOException $e) {

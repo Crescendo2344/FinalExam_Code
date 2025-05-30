@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     const searchBy = document.getElementById('searchBy');
     const searchBtn = document.getElementById('searchBtn');
+    const showAllBtn = document.getElementById('showAllBtn');
     const resetBtn = document.getElementById('resetBtn');
     const studentForm = document.getElementById('studentForm');
     const addBtn = document.getElementById('addBtn');
@@ -10,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const resetFormBtn = document.getElementById('resetFormBtn');
     const studentTable = document.getElementById('studentTable');
     
-     studentTable.innerHTML = '<p class="no-results">Use the search form to find students</p>';
+     studentTable.innerHTML = '<p class="no-results">Use the search form or click "Show All Students" to view records</p>';
     
     
     searchBtn.addEventListener('click', function() {
@@ -24,6 +25,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+     showAllBtn.addEventListener('click', function() {
+        loadStudents(); 
+    });
     
     resetBtn.addEventListener('click', function() {
         searchInput.value = '';
@@ -62,6 +66,11 @@ document.addEventListener('DOMContentLoaded', function() {
         resetForm();
     });
     
+    resetBtn.addEventListener('click', function() {
+    searchInput.value = '';
+    studentTable.innerHTML = '<p class="no-results">Use the search form or click "Show All Students" to view records</p>';
+    document.getElementById('resultsCount').textContent = '';
+    });
     
     function loadStudents() {
         fetch('api.php?action=read')
@@ -75,12 +84,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function searchStudents(field, term) {
     const searchTerm = term.trim();
+    
+    
+    if (field === 'class_mode') {
+        const validModes = ['Online', 'Face-to-face', 'Hybrid'];
+        if (!validModes.includes(searchTerm)) {
+            alert('Please enter a valid class mode: Online, Face-to-face, or Hybrid');
+            return;
+        }
+    }
+    
     if (!searchTerm) {
         studentTable.innerHTML = '<p class="no-results">Please enter a search term</p>';
         return;
     }
 
-    
+   
     studentTable.innerHTML = '<p>Searching...</p>';
     
     fetch(`api.php?action=search&field=${encodeURIComponent(field)}&term=${encodeURIComponent(searchTerm)}`)
@@ -110,9 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Search error:', error);
             studentTable.innerHTML = `<p class="error">Search failed: ${error.message}</p>`;
         });
-}
-
-    
+} 
     
     function displayStudents(students) {
     let html = `

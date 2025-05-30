@@ -24,8 +24,10 @@ require_once 'db_config.php';
                     <option value="first_name">First Name</option>
                     <option value="sex">Sex</option>
                     <option value="course">Course</option>
+                    <option value="class_mode">Class Mode</option>
                 </select>
                 <button id="searchBtn">Search</button>
+                <button id="showAllBtn">Show All Students</button>
                 <button id="resetBtn">Reset</button>
             </div>
         </div>
